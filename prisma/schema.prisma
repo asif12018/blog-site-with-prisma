@@ -13,7 +13,6 @@ datasource db {
   provider = "postgresql"
 }
 
-
 // post model
 
 model Post {
