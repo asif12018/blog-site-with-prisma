@@ -11,7 +11,13 @@ const createPost = async(req:Request, res:Response) =>{
             message:"missing data on req.body"
          })
        }
-       const result = await PostService.createPost(data);
+       const user = req.user
+       if(!user){
+          return res.status(400).json({
+            error: "Unauthorized"
+          })
+       }
+       const result = await PostService.createPost(data, user.id as string);
        return res.status(201).json({
         success: true,
         message: "post created successfully",
