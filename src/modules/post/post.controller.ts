@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { PostService } from "./post.service";
 
 
+
 const createPost = async(req:Request, res:Response) =>{
     try{
        const data = req.body;
@@ -32,6 +33,28 @@ const createPost = async(req:Request, res:Response) =>{
     }
 }
 
+
+//get post controller
+
+const getAllPost = async(req:Request, res:Response)=>{
+  try{
+      const {search} = req.query;
+      const searchString = typeof search === 'string' ? search : undefined
+      const result = await PostService.getAllPost({search: searchString});
+      return res.status(200).json({
+        success: true,
+        message: "post retrieved",
+        data: result
+      })
+  }catch(err:any){
+    return res.status(500).json({
+      success:false,
+      message: err.message,
+      details: err
+    })
+  }
+}
 export const PostController = {
-    createPost
+    createPost,
+    getAllPost
 }
