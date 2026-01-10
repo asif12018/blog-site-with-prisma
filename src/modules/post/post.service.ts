@@ -35,6 +35,12 @@ const getAllPost = async(payload: {search: string | undefined})=>{
         contains: payload.search as string,
         mode: "insensitive"
       }
+      },
+      { 
+        //this is array. so contains will not work
+        tags: {
+          has: payload.search as string
+        }
       }
       ]
     }
