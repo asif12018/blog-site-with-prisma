@@ -13,7 +13,7 @@ router.get("/", PostController.getAllPost)
 router.post("/", auth(UserRole.USER),PostController.createPost)
 
 
-
+router.get("/:postId", PostController.getPostById);
 
 
 
