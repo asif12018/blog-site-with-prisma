@@ -1,3 +1,4 @@
+
 import { Post, PostStatus, Prisma } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 
@@ -25,6 +26,11 @@ const getAllPost = async (payload: {
   isFeatured: boolean | undefined;
   status: PostStatus | undefined;
   authorId: string | undefined;
+  page: number;
+  limit: number;
+  skip: number;
+  sortBy: string | undefined;
+  sortOrder: string | undefined;
 }) => {
   const andConditions: Prisma.PostWhereInput[] = [];
   if (payload.search) {
@@ -73,10 +79,15 @@ const getAllPost = async (payload: {
   }
 
   const result = await prisma.post.findMany({
+    take: payload.limit ,
+    skip: payload.skip,
     where: {
       //and logic. if search not available it will skip the search and go for tags
       AND: andConditions,
     },
+    orderBy: {
+      
+    }
   });
   return result;
 };
