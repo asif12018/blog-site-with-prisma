@@ -29,8 +29,8 @@ const getAllPost = async (payload: {
   page: number;
   limit: number;
   skip: number;
-  sortBy: string | undefined;
-  sortOrder: string | undefined;
+  sortBy: string ;
+  sortOrder: string ;
 }) => {
   const andConditions: Prisma.PostWhereInput[] = [];
   if (payload.search) {
@@ -77,19 +77,36 @@ const getAllPost = async (payload: {
   if (payload.authorId){
     andConditions.push({authorId: payload.authorId})
   }
-
+  
+  const page = payload.page;
+  const limit = payload.limit;
+  
   const result = await prisma.post.findMany({
-    take: payload.limit ,
+    take: limit ,
     skip: payload.skip,
     where: {
       //and logic. if search not available it will skip the search and go for tags
       AND: andConditions,
     },
     orderBy: {
-      
+      [payload.sortBy] : payload.sortOrder
     }
   });
-  return result;
+
+  const total = await prisma.post.count({
+    where : {
+      AND: andConditions
+    }
+  })
+  return {
+    data: result,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    }
+  }
 };
 
 export const PostService = {
