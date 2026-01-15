@@ -13,5 +13,7 @@ router.get("/:commentId", commentController.getCommentById);
 
 router.get("/author/:authorId", commentController.getCommentByAuthorId);
 
+router.delete("/:commentId", commentController.deleteComment);
+
 
 export const commentRouter: Router = router;
