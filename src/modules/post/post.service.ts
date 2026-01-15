@@ -1,5 +1,9 @@
-
-import { Post, PostStatus, Prisma } from "../../../generated/prisma/client";
+import {
+  CommentStatus,
+  Post,
+  PostStatus,
+  Prisma,
+} from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 
 //create a post service
@@ -29,8 +33,8 @@ const getAllPost = async (payload: {
   page: number;
   limit: number;
   skip: number;
-  sortBy: string ;
-  sortOrder: string ;
+  sortBy: string;
+  sortOrder: string;
 }) => {
   const andConditions: Prisma.PostWhereInput[] = [];
   if (payload.search) {
@@ -74,67 +78,102 @@ const getAllPost = async (payload: {
     andConditions.push({ status: payload.status });
   }
 
-  if (payload.authorId){
-    andConditions.push({authorId: payload.authorId})
+  if (payload.authorId) {
+    andConditions.push({ authorId: payload.authorId });
   }
-  
+
   const page = payload.page;
   const limit = payload.limit;
-  
+
   const result = await prisma.post.findMany({
-    take: limit ,
+    take: limit,
     skip: payload.skip,
     where: {
       //and logic. if search not available it will skip the search and go for tags
       AND: andConditions,
     },
     orderBy: {
-      [payload.sortBy] : payload.sortOrder
+      [payload.sortBy]: payload.sortOrder,
+    },
+    include: {
+      _count: {
+        select: {comments: true}
+      }
     }
   });
 
   const total = await prisma.post.count({
-    where : {
-      AND: andConditions
-    }
-  })
+    where: {
+      AND: andConditions,
+    },
+  });
   return {
     data: result,
     pagination: {
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit)
-    }
-  }
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 //get post by id
 
-const getPostById = async(id:string) =>{
-   const result = await prisma.$transaction(async (tx) =>{
-     await tx.post.update({
-    where: {
-      id: id
-    },
-    data: {
-      views : {
-        increment: 1
-      }
-    }
-  })
-   const postData = await prisma.post.findUnique({
-    where: {
-      id: id
-    }
-   });
-   return postData
-   })
-   return result
-}
+const getPostById = async (id: string) => {
+  //transaction and roll back
+  const result = await prisma.$transaction(async (tx) => {
+    await tx.post.update({
+      where: {
+        id: id,
+      },
+      data: {
+        views: {
+          increment: 1,
+        },
+      },
+    });
+    const postData = await prisma.post.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        comments: {
+          where: {
+            parent: null,
+            status: CommentStatus.APPROVED,
+          },
+          orderBy: { createdAt: "desc" },
+          include: {
+            replies: {
+              where: {
+                status: CommentStatus.APPROVED,
+              },
+              orderBy: { createdAt: "asc" },
+              include: {
+                replies: {
+                  where: {
+                    status: CommentStatus.APPROVED,
+                  },
+                  orderBy: { createdAt: "asc" },
+                },
+              },
+            },
+          },
+        },
+        _count: {
+          //count total comment
+          select: {comments: true}
+        }
+      },
+    });
+    return postData;
+  });
+  return result;
+};
 
 export const PostService = {
   createPost,
   getAllPost,
-  getPostById
+  getPostById,
 };
