@@ -3,7 +3,6 @@ import { PostService } from "./post.service";
 import { PostStatus } from "../../../generated/prisma/enums";
 import paginationSortingHelper from "../../helpers/paginationSortingHelper";
 
-
 const createPost = async (req: Request, res: Response) => {
   try {
     const data = req.body;
@@ -55,10 +54,8 @@ const getAllPost = async (req: Request, res: Response) => {
 
     const authorId = req.query.authorId as string | undefined;
 
-    
-    
     const options = paginationSortingHelper(req.query);
-    const {page, limit, skip, sortBy, sortOrder } = options;
+    const { page, limit, skip, sortBy, sortOrder } = options;
     const result = await PostService.getAllPost({
       search: searchString,
       tags,
@@ -69,7 +66,7 @@ const getAllPost = async (req: Request, res: Response) => {
       limit,
       skip,
       sortBy,
-      sortOrder 
+      sortOrder,
     });
     return res.status(200).json({
       success: true,
@@ -87,31 +84,55 @@ const getAllPost = async (req: Request, res: Response) => {
 
 //get post by Id
 
-const getPostById = async(req:Request, res:Response) =>{
-  try{  
-        const {postId} = req.params;
-        const result = await PostService.getPostById(postId!);
-        if(!result){
-          return res.status(404).json({
-            success:false,
-            message: "Post not found"
-          })
-        }
-        return res.status(200).json({
-          success: true,
-          message:"Post retrieved successfully",
-          data: result
-        })
-  }catch(err:any){
+const getPostById = async (req: Request, res: Response) => {
+  try {
+    const { postId } = req.params;
+    const result = await PostService.getPostById(postId!);
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Post retrieved successfully",
+      data: result,
+    });
+  } catch (err: any) {
     return res.status(500).json({
       success: false,
       message: err.message,
-      details: err
-    })
+      details: err,
+    });
   }
-}
+};
+
+//get my post
+
+const getMyPost = async (req: Request, res: Response) => {
+  try {
+    const userId = req?.user?.id;
+    if(!userId){
+      throw new Error("unauthorized");
+    }
+    const result = await PostService.getMyPost(userId as string);
+    return res.status(200).json({
+      success: true,
+      message: "Post retrieved successfully",
+      data: result,
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+      details: err,
+    });
+  }
+};
 export const PostController = {
   createPost,
   getAllPost,
-  getPostById
+  getPostById,
+  getMyPost
 };

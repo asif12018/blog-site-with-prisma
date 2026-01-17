@@ -8,9 +8,9 @@ const router = express.Router();
 //get all post
 
 router.get("/", PostController.getAllPost)
+router.get("/my-posts", auth(UserRole.ADMIN, UserRole.USER), PostController.getMyPost);
 
-
-router.post("/", auth(UserRole.USER),PostController.createPost)
+router.post("/", auth(UserRole.USER, UserRole.ADMIN),PostController.createPost)
 
 
 router.get("/:postId", PostController.getPostById);
