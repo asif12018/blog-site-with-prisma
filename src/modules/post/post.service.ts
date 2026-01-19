@@ -258,10 +258,37 @@ const updatePost = async (postId: string, data: Partial<Post>, authorId: string,
 
 }
 
+//delete post
+
+const deletePost = async(postId: string, authorId: string, isAdmin: boolean)=>{
+  const postData = await prisma.post.findFirstOrThrow({
+    where: {
+      id: postId
+    },
+    select: {
+      id: true,
+      authorId: true
+    }
+  });
+
+  if(!isAdmin && (postData.authorId !== authorId)){
+    throw new Error("unauthorized")
+  }
+
+  const result = await prisma.post.delete({
+    where: {
+      id: postData.id
+    }
+  });
+
+  return result
+}
+
 export const PostService = {
   createPost,
   getAllPost,
   getPostById,
   getMyPost,
-  updatePost
+  updatePost,
+  deletePost
 };
