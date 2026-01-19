@@ -284,11 +284,65 @@ const deletePost = async(postId: string, authorId: string, isAdmin: boolean)=>{
   return result
 }
 
+//stats for admin dashboard
+//todo: postCount, publishedPosts, draftPosts, totalComments, totalViews
+const getStats = async()=>{
+    return  await prisma.$transaction(async (tx) =>{
+      const totalPosts = await tx.post.count();
+      const publishedPost = await tx.post.count({
+        where: {
+          status:"PUBLISHED"
+        }
+      });
+      const draftPost = await tx.post.count({
+        where: {
+          status:"DRAFT"
+        }
+      });
+      const archivePost = await tx.post.count({
+        where:{
+          status: "ARCHIVED"
+        }
+      });
+      const totalComment = await tx.comment.count();
+      const totalApprovedComment = await tx.comment.count({
+        where: {
+          status:"APPROVED"
+        }
+      });
+      const totalRejectComment = await tx.comment.count({
+        where: {
+          status: "REJECT"
+        }
+      });
+      const totalUsers = await tx.user.count();
+      const adminCount = await tx.user.count({
+        where: {
+          role: "ADMIN"
+        }
+      });
+      const userCount = await tx.user.count({
+        where: {
+          role: "USER"
+        }
+      });
+      //?total view count for posts
+      const totalViews = await tx.post.aggregate({
+        _sum: {views: true}
+      });
+      return {
+        totalPosts, publishedPost, draftPost, archivePost, totalComment, totalApprovedComment,
+        totalRejectComment, totalUsers, adminCount, userCount, totalViews: totalViews._sum.views
+      }
+    })
+}
+
 export const PostService = {
   createPost,
   getAllPost,
   getPostById,
   getMyPost,
   updatePost,
-  deletePost
+  deletePost,
+  getStats
 };

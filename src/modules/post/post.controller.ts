@@ -185,11 +185,33 @@ const deletePost = async(req:Request, res:Response) =>{
   }
 }
 
+//state for admin dashboard
+
+const getStats = async(req: Request, res:Response)=>{
+   try{
+
+    const result = await PostService.getStats();
+    return res.status(200).json({
+      success: true,
+      message: "Data retrieve successfully",
+      data: result
+    })
+
+   }catch(err:any){
+    return res.status(500).json({
+      success:false,
+      message: err.message,
+      details: err
+    })
+   }
+}
+
 export const PostController = {
   createPost,
   getAllPost,
   getPostById,
   getMyPost,
   updataPost,
-  deletePost
+  deletePost,
+  getStats
 };
