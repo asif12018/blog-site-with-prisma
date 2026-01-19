@@ -10,7 +10,7 @@ import { prisma } from "../../lib/prisma";
 
 const createPost = async (
   data: Omit<Post, "id" | "createdAt" | "updatedAt" | "authorId">,
-  userId: string
+  userId: string,
 ) => {
   const result = await prisma.post.create({
     data: {
@@ -97,9 +97,9 @@ const getAllPost = async (payload: {
     },
     include: {
       _count: {
-        select: {comments: true}
-      }
-    }
+        select: { comments: true },
+      },
+    },
   });
 
   const total = await prisma.post.count({
@@ -163,8 +163,8 @@ const getPostById = async (id: string) => {
         },
         _count: {
           //count total comment
-          select: {comments: true}
-        }
+          select: { comments: true },
+        },
       },
     });
     return postData;
@@ -172,56 +172,89 @@ const getPostById = async (id: string) => {
   return result;
 };
 
-
 //get my post
 
-const getMyPost = async(authorId: string)=>{
+const getMyPost = async (authorId: string) => {
   const userInfo = await prisma.user.findUniqueOrThrow({
     where: {
       id: authorId,
-      status: "ACTIVE"
+      status: "ACTIVE",
     },
     select: {
-      id: true
+      id: true,
+    },
+  });
+
+  const results = await prisma.post.findMany({
+    where: {
+      authorId: authorId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      _count: {
+        select: {
+          comments: true,
+        },
+      },
+    },
+  });
+
+  // const total = await prisma.post.count({
+  //   where:{
+  //     authorId: authorId
+  //   }
+  // })
+
+  const total = await prisma.post.aggregate({
+    _count: {
+      id: true,
+    },
+    where: {
+      authorId: authorId,
+    },
+  });
+
+  return {
+    results,
+    total,
+  };
+};
+
+//update post
+/** 
+ *  user - sudhu nijr post update korte parbe and is Featured  update korte parbe na
+ *  admin - sobar post update korte parbe
+*/
+const updatePost = async (postId: string, data: Partial<Post>, authorId: string, isAdmin: boolean) => {
+  //checking post author id and login id
+  const postData = await prisma.post.findUniqueOrThrow({
+    where : {
+      id : postId
+    },
+    select: {
+      id: true,
+      authorId: true
     }
   });
-    
-   
-    const results = await prisma.post.findMany({
-      where: {
-        authorId: authorId
-      },
-      orderBy: {
-        createdAt: "desc"
-      },
-      include: {
-        _count: {
-          select: {
-            comments: true
-          }
-        }
-      }
-    });
 
-    // const total = await prisma.post.count({
-    //   where:{
-    //     authorId: authorId
-    //   }
-    // })
+  if(!isAdmin && (postData.authorId !== authorId)){
+     throw new Error("You are not the owner/creator of the post");
+  }
 
-    const total = await prisma.post.aggregate({
-      _count:{
-        id: true
-      },
-      where: {
-        authorId:authorId
-      }
-    })
+  if(!isAdmin){
+    delete data.isFeatured
+  }
 
-    return {
-      results,
-      total
-    };
+  const result = await prisma.post.update({
+    where: {
+      id: postData.id
+    },
+    data:data
+  });
+
+  return result
 
 }
 
@@ -229,5 +262,6 @@ export const PostService = {
   createPost,
   getAllPost,
   getPostById,
-  getMyPost
+  getMyPost,
+  updatePost
 };
