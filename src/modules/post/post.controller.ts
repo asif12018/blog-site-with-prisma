@@ -77,7 +77,7 @@ const getAllPost = async (req: Request, res: Response, next:NextFunction) => {
 
 //get post by Id
 
-const getPostById = async (req: Request, res: Response) => {
+const getPostById = async (req: Request, res: Response,next: NextFunction) => {
   try {
     const { postId } = req.params;
     const result = await PostService.getPostById(postId!);
@@ -93,17 +93,13 @@ const getPostById = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (err: any) {
-    return res.status(500).json({
-      success: false,
-      message: err.message,
-      details: err,
-    });
+    next(err)
   }
 };
 
 //get my post
 
-const getMyPost = async (req: Request, res: Response) => {
+const getMyPost = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req?.user?.id;
     if(!userId){
@@ -116,17 +112,13 @@ const getMyPost = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (err: any) {
-    return res.status(500).json({
-      success: false,
-      message: err.message,
-      details: err,
-    });
+    next(err);
   }
 };
 
 //update post
 
-const updataPost = async(req:Request, res:Response) =>{
+const updataPost = async(req:Request, res:Response, next:NextFunction) =>{
   try{
     const user = req.user;
     if(!user){
@@ -143,16 +135,12 @@ const updataPost = async(req:Request, res:Response) =>{
     })
 
   }catch(err:any){
-    return res.status(500).json({
-      success: false,
-      message: err.message,
-      details:err
-    })
+   next(err)
   }
 }
 
 //delete post
-const deletePost = async(req:Request, res:Response) =>{
+const deletePost = async(req:Request, res:Response, next: NextFunction) =>{
   try{
     const user = req.user;
     if(!user){
@@ -169,17 +157,13 @@ const deletePost = async(req:Request, res:Response) =>{
     })
 
   }catch(err:any){
-    return res.status(500).json({
-      success: false,
-      message: err.message,
-      details:err
-    })
+    next(err);
   }
 }
 
 //state for admin dashboard
 
-const getStats = async(req: Request, res:Response)=>{
+const getStats = async(req: Request, res:Response, next: NextFunction)=>{
    try{
 
     const result = await PostService.getStats();
@@ -190,11 +174,7 @@ const getStats = async(req: Request, res:Response)=>{
     })
 
    }catch(err:any){
-    return res.status(500).json({
-      success:false,
-      message: err.message,
-      details: err
-    })
+    next(err);
    }
 }
 
