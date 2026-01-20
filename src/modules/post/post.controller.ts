@@ -1,10 +1,10 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { PostService } from "./post.service";
 import { PostStatus } from "../../../generated/prisma/enums";
 import paginationSortingHelper from "../../helpers/paginationSortingHelper";
 import { UserRole } from "../../middleware/auth";
 
-const createPost = async (req: Request, res: Response) => {
+const createPost = async (req: Request, res: Response, next:NextFunction) => {
   try {
     const data = req.body;
     if (data.length === 0) {
@@ -26,17 +26,13 @@ const createPost = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (err: any) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-      details: err,
-    });
+    next(err);
   }
 };
 
 //get post controller
 
-const getAllPost = async (req: Request, res: Response) => {
+const getAllPost = async (req: Request, res: Response, next:NextFunction) => {
   try {
     const { search } = req.query;
     const searchString = typeof search === "string" ? search : undefined;
@@ -75,11 +71,7 @@ const getAllPost = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (err: any) {
-    return res.status(500).json({
-      success: false,
-      message: err.message,
-      details: err,
-    });
+   next(err)
   }
 };
 
