@@ -19,37 +19,37 @@ function errorHandler(
   }
   // prisma client know request error
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    if(err.code === "P2025"){
+    if (err.code === "P2025") {
       statusCode = 400;
-      errorMessage = "An operation failed because it depends on one or more records that were required but not found.";
+      errorMessage =
+        "An operation failed because it depends on one or more records that were required but not found.";
     }
-    if(err.code === "P2002"){
+    if (err.code === "P2002") {
       errorMessage = "Unique constraint failed on the {constraint}";
     }
-    if(err.code === "P2003"){
+    if (err.code === "P2003") {
       statusCode = 400;
-      errorMessage = "Foreign key constraint failed on the field: {field_name}"
+      errorMessage = "Foreign key constraint failed on the field: {field_name}";
     }
-
   }
 
   // prisma initialization error
 
-  if (err instanceof Prisma.PrismaClientInitializationError){
-    if(err.errorCode === "P1000"){
-       statusCode = 401;
-       errorMessage = "Authentication failed. please check your credentials";
+  if (err instanceof Prisma.PrismaClientInitializationError) {
+    if (err.errorCode === "P1000") {
+      statusCode = 401;
+      errorMessage = "Authentication failed. please check your credentials";
     }
-    if(err.errorCode === "P1001"){
+    if (err.errorCode === "P1001") {
       statusCode = 400;
-      errorMessage = "can't reach database server"
+      errorMessage = "can't reach database server";
     }
   }
 
-
+  //
 
   // prisma unknown error
-  if( err instanceof Prisma.PrismaClientUnknownRequestError){
+  if (err instanceof Prisma.PrismaClientUnknownRequestError) {
     statusCode = 500;
     errorMessage = "Error occurred during query execution";
   }
