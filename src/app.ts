@@ -11,7 +11,10 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: process.env.BETTER_AUTH_URL,
+   origin: [
+      "http://localhost:3000",        // Your Frontend
+      process.env.BETTER_AUTH_URL!,   // Your Backend (http://localhost:5000)
+    ],
     credentials: true,
   })
 );
